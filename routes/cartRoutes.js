@@ -1,20 +1,26 @@
 const express = require("express");
 const router = express.Router();
+const {
+  createCart,
+  getCart,
+  addItemToCart,
+  removeItemFromCart,
+  clearCart,
+} = require("../controllers/cartController");
 
-// Routes will be implemented in step 13
-// GET cart
-router.get("/:userId", (req, res) => {
-  res.json({ message: "Get user cart" });
-});
+// GET user's cart
+router.get("/:userId", getCart);
 
 // POST create cart
-router.post("/", (req, res) => {
-  res.json({ message: "Create cart" });
-});
+router.post("/", createCart);
 
 // POST add item to cart
-router.post("/:userId/items", (req, res) => {
-  res.json({ message: "Add item to cart" });
-});
+router.post("/:userId/items", addItemToCart);
+
+// DELETE remove item from cart
+router.delete("/:userId/items/:productId", removeItemFromCart);
+
+// DELETE clear entire cart
+router.delete("/:userId/clear", clearCart);
 
 module.exports = router;

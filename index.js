@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const connectDB = require("./db/connect");
+const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
@@ -11,7 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 // Connect to Database
 connectDB();
 
-// Routes (will be added in next steps)
+// Routes
 app.use("/api/products", require("./routes/productRoutes"));
 app.use("/api/cart", require("./routes/cartRoutes"));
 
@@ -25,11 +26,8 @@ app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
 
-// Error Middleware (will be implemented in step 15)
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: "Internal Server Error" });
-});
+// Error Middleware (must be last)
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

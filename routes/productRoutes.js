@@ -1,30 +1,26 @@
 const express = require("express");
 const router = express.Router();
+const {
+  getAllProducts,
+  getProductById,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} = require("../controllers/productController");
 
-// Routes will be implemented in step 12
 // GET all products
-router.get("/", (req, res) => {
-  res.json({ message: "Get all products" });
-});
+router.get("/", getAllProducts);
 
 // POST new product
-router.post("/", (req, res) => {
-  res.json({ message: "Create new product" });
-});
+router.post("/", createProduct);
 
 // GET product by ID
-router.get("/:id", (req, res) => {
-  res.json({ message: "Get product by ID" });
-});
+router.get("/:id", getProductById);
 
 // PUT update product
-router.put("/:id", (req, res) => {
-  res.json({ message: "Update product" });
-});
+router.put("/:id", updateProduct);
 
 // DELETE product
-router.delete("/:id", (req, res) => {
-  res.json({ message: "Delete product" });
-});
+router.delete("/:id", deleteProduct);
 
 module.exports = router;
