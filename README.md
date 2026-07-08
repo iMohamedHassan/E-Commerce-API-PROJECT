@@ -34,7 +34,12 @@ Two types of users:
    npm install
    ```
 
-3. Create `.env` file with:
+3. Copy `.env.example` to create `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+
+4. Open `.env` and set your MongoDB connection string:
    ```env
    MONGODB_URI=your_mongodb_connection_string
    PORT=5000
@@ -103,7 +108,7 @@ POST http://localhost:5000/api/cart/user123/items
 Content-Type: application/json
 
 {
-  "productId": "507f1f77bcf86cd799439011",
+  "productId": "6a4e74202f453cec1f526bd0",
   "quantity": 2
 }
 ```
