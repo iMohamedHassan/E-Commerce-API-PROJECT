@@ -2,15 +2,14 @@ require("dotenv").config();
 const express = require("express");
 const connectDB = require("./db/connect");
 const errorHandler = require("./middleware/errorHandler");
+const Product = require("./models/Product");
+const { seedDatabase } = require("./scripts/seed");
 
 const app = express();
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Connect to Database
-connectDB();
 
 // Routes
 app.use("/api/products", require("./routes/productRoutes"));
@@ -29,7 +28,26 @@ app.use((req, res) => {
 // Error Middleware (must be last)
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+const PORT = Number(process.env.PORT) || 5000;
+
+const startServer = async () => {
+  try {
+    await connectDB();
+
+    const productCount = await Product.countDocuments();
+    if (productCount === 0) {
+      await seedDatabase({ clearExisting: false });
+    } else {
+      console.log(`Found ${productCount} products already. No need to seed again.`);
+    }
+
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Server could not start:", error.message);
+    process.exit(1);
+  }
+};
+
+startServer();

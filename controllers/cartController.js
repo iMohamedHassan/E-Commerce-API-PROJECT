@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Product = require("../models/Product");
 const {
   createCart,
@@ -58,15 +59,31 @@ exports.addItemToCart = async (req, res, next) => {
     const { userId } = req.params;
     const { productId, quantity } = req.body;
 
-    if (!productId || !quantity) {
+    if (!productId || quantity === undefined || quantity === null) {
       return res.status(400).json({
         success: false,
         message: "Please provide productId and quantity",
       });
     }
 
+    const parsedQuantity = Number(quantity);
+    if (!Number.isInteger(parsedQuantity) || parsedQuantity <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Quantity must be a positive whole number",
+      });
+    }
+
+    const normalizedProductId = productId.trim();
+    if (!mongoose.Types.ObjectId.isValid(normalizedProductId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide a valid productId",
+      });
+    }
+
     // Check if product exists
-    const product = await Product.findById(productId);
+    const product = await Product.findById(normalizedProductId);
     if (!product) {
       return res.status(404).json({
         success: false,
@@ -74,7 +91,12 @@ exports.addItemToCart = async (req, res, next) => {
       });
     }
 
-    const cart = await addItemToCart(userId, productId, quantity, product.price);
+    const cart = await addItemToCart(
+      userId,
+      normalizedProductId,
+      parsedQuantity,
+      product.price
+    );
     res.status(200).json({
       success: true,
       message: "Item added to cart successfully",

@@ -1,19 +1,7 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
 const Product = require("../models/Product");
-
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log("MongoDB connected for seeding");
-  } catch (error) {
-    console.error("Connection error:", error.message);
-    process.exit(1);
-  }
-};
+const connectDB = require("../db/connect");
 
 const sampleProducts = [
   {
@@ -74,30 +62,52 @@ const sampleProducts = [
   },
 ];
 
-const seedDatabase = async () => {
+const seedDatabase = async ({ clearExisting = true } = {}) => {
   try {
-    // Clear existing products
-    await Product.deleteMany({});
-    console.log("Cleared existing products");
+    const existingCount = await Product.countDocuments();
 
-    // Insert sample products
+    if (existingCount > 0 && clearExisting === false) {
+      console.log(`Products already exist (${existingCount}). Skipping seeding.`);
+      return [];
+    }
+
+    if (clearExisting) {
+      await Product.deleteMany({});
+      console.log("Cleared existing products");
+    }
+
     const createdProducts = await Product.insertMany(sampleProducts);
-    console.log(`✅ ${createdProducts.length} products seeded successfully`);
+    console.log(`${createdProducts.length} products were added.`);
 
-    // Display seeded products
-    console.log("\nSeeded Products:");
-    createdProducts.forEach((product) => {
-      console.log(`- ${product.name} ($${product.price})`);
-    });
+    if (clearExisting) {
+      console.log("\nSample products:");
+      createdProducts.forEach((product) => {
+        console.log(`- ${product.name} ($${product.price})`);
+      });
+    }
 
-    mongoose.connection.close();
-    console.log("\n✅ Database seeding completed!");
+    return createdProducts;
   } catch (error) {
     console.error("Error seeding database:", error.message);
-    mongoose.connection.close();
-    process.exit(1);
+    throw error;
   }
 };
 
-// Run seeding
-connectDB().then(() => seedDatabase());
+const runSeeder = async () => {
+  try {
+    await connectDB();
+    await seedDatabase();
+    console.log("\nSeeding finished.");
+  } catch (error) {
+    console.error("Seeding failed:", error.message);
+    process.exit(1);
+  } finally {
+    await mongoose.connection.close();
+  }
+};
+
+if (require.main === module) {
+  runSeeder();
+}
+
+module.exports = { sampleProducts, seedDatabase };
